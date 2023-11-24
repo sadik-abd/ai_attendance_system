@@ -55,19 +55,19 @@ class Recogniser:
         with open('./embeds/embeds.pkl', 'wb') as file:
             pickle.dump(self.embeds, file)
 
-    def search_flatten(self, emb, threshold=0.99):
+    def search_flatten(self, emb, threshold=8.0):
         known_names = [k for k in self.embeds.keys()]
         k_embs = [i for i in self.embeds.values()]
         scr = []
         for k_emb in k_embs:
-            scores = np.dot(emb, k_emb.T)
-            score = np.clip(scores, 0., 1.)
+            score = np.dot(emb, k_emb.T)
+            # score = np.clip(scores, 0., 1.)
 
             scr.append(score)
         name = known_names[np.argmax(np.array(scr))]
         if np.max(np.array(scr)) < threshold:
             return "Unknown",0.0
-        return name, np.max(scr)
+        return name, 1.00
 
     def detect(self,img):
         results = self.detector.detect(img)
