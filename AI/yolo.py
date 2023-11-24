@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import math
 import argparse
+import onnxruntime as ort
 
 class YOLOv8_face:
     def __init__(self, path, conf_thres=0.2, iou_thres=0.5):
@@ -10,7 +11,13 @@ class YOLOv8_face:
         self.class_names = ['face']
         self.num_classes = len(self.class_names)
         # Initialize model
-        self.net = cv2.dnn.readNet(path)
+        # self.net = cv2.dnn.readNetFromONNX(path)
+        # self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        # self.net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+
+        sess_options = ort.SessionOptions()
+        self.net = ort.InferenceSession(path, sess_options, providers=['CUDAExecutionProvider'])
+
         self.input_height = 640
         self.input_width = 640
         self.reg_max = 16
@@ -34,7 +41,6 @@ class YOLOv8_face:
 
     def softmax(self, x, axis=1):
         x_exp = np.exp(x)
-        # 如果是列向量，则axis=0
         x_sum = np.sum(x_exp, axis=axis, keepdims=True)
         s = x_exp / x_sum
         return s
@@ -64,9 +70,17 @@ class YOLOv8_face:
         scale_h, scale_w = srcimg.shape[0]/newh, srcimg.shape[1]/neww
         input_img = input_img.astype(np.float32) / 255.0
 
-        blob = cv2.dnn.blobFromImage(input_img)
-        self.net.setInput(blob)
-        outputs = self.net.forward(self.net.getUnconnectedOutLayersNames())
+        # blob = cv2.dnn.blobFromImage(input_img)
+        # self.net.setInput(blob)
+        # outputs = self.net.forward(self.net.getUnconnectedOutLayersNames())
+        input_data = input_img
+        if input_data.shape[0] > 3:  # Assuming H and W are larger than the number of channels
+            input_data = input_data.transpose(2, 0, 1)
+
+        # Add the batch size dimension
+        input_data = np.expand_dims(input_data, axis=0)
+        input_name = self.net.get_inputs()[0].name
+        outputs = self.net.run(None, {input_name: input_data})
         # if isinstance(outputs, tuple):
         #     outputs = list(outputs)
         # if float(cv2.__version__[:3])>=4.7:
@@ -147,12 +161,12 @@ class YOLOv8_face:
             y2 = np.clip(y2, 0, max_shape[0])
         return np.stack([x1, y1, x2, y2], axis=-1)
     
-    def draw_detections(self, image, boxes, scores, kpts, name):
-        for box, score, kp in zip(boxes, scores, kpts):
+    def draw_detections(self, image, boxes, scores, kpts, names, scr):
+        for box, score, kp, name, sc in zip(boxes, scores, kpts, names, scr):
             x, y, w, h = box.astype(int)
             # Draw rectangle
             cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), thickness=3)
-            cv2.putText(image, "face: "+name +" "+str(round(score,2)), (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 166, 255), thickness=2)
+            cv2.putText(image,str(sc)+" face: "+name +" "+str(round(score,2)), (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 166, 255), thickness=2)
             for i in range(5):
                 cv2.circle(image, (int(kp[i * 3]), int(kp[i * 3 + 1])), 4, (0, 255, 0), thickness=-1)
                 # cv2.putText(image, str(i), (int(kp[i * 3]), int(kp[i * 3 + 1]) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), thickness=1)
