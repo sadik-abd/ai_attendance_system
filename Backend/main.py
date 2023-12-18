@@ -1,7 +1,8 @@
 
 
 # Capture video
-rtsp_addr = "rtsp://admin:abcd1234@192.168.5.102:554/Streaming/Channels/101"
+# rtsp_addr = "rtsp://admin:abcd1234@192.168.5.102:554/Streaming/Channels/101"
+rtsp_addr = 0
 
 import cv2
 import numpy as np

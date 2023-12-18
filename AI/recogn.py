@@ -93,7 +93,8 @@ if __name__ == "__main__":
     model = Recogniser()
     data = json.load(open('points.json', 'r'))
     border_line = np.array(data["points"])
-    rtsp_addr = "rtsp://admin:abcd1234@192.168.5.102:554/Streaming/Channels/101"
+    rtsp_addr = 0
+    # rtsp_addr = "rtsp://admin:abcd1234@192.168.5.102:554/Streaming/Channels/101"
 
     cap = cv2.VideoCapture(rtsp_addr)
     prev_frame_time = time.time()
