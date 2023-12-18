@@ -7,5 +7,9 @@ app = Flask(__name__)
 def main():
     return render_template("index.html")
 
+@app.route("/tables",methods=["GET"])
+def tables():
+    return render_template("tables.html")
+
 if __name__ == "__main__":
     app.run()
