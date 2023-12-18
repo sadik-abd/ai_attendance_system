@@ -166,7 +166,7 @@ class YOLOv8_face:
             x, y, w, h = box.astype(int)
             # Draw rectangle
             cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), thickness=3)
-            cv2.putText(image,str(sc)+" face: "+name +" "+str(round(score,2)), (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 166, 255), thickness=2)
+            cv2.putText(image," face: "+name +" ", (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 166, 255), thickness=2)
             for i in range(5):
                 cv2.circle(image, (int(kp[i * 3]), int(kp[i * 3 + 1])), 4, (0, 255, 0), thickness=-1)
                 # cv2.putText(image, str(i), (int(kp[i * 3]), int(kp[i * 3 + 1]) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), thickness=1)
