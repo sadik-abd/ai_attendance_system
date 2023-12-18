@@ -6,10 +6,11 @@ import insightface
 from insightface.app.common import Face
 import pickle
 from insightface.model_zoo import model_zoo
+from lines import *
 from yolo import YOLOv8_face
 import os
 import time 
-
+import json
 
 def crop_images(image, bounding_boxes):
     """
@@ -33,7 +34,7 @@ def crop_images(image, bounding_boxes):
     return cropped_images
 
 class Recogniser:
-    def __init__(self, size) -> None:
+    def __init__(self) -> None:
         self.detector = YOLOv8_face("./models/yolov8n-face.onnx")
         self.tracker = None
         self.rec_model = model_zoo.get_model(f'./models/webface_r50.onnx', providers=["CUDAExecutionProvider"])
@@ -89,9 +90,12 @@ class Recogniser:
         pass
 
 if __name__ == "__main__":
-    model = Recogniser("m")
+    model = Recogniser()
+    data = json.load(open('points.json', 'r'))
+    border_line = np.array(data["points"])
+    rtsp_addr = "rtsp://admin:abcd1234@192.168.5.102:554/Streaming/Channels/101"
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(rtsp_addr)
     prev_frame_time = time.time()
     if not cap.isOpened():
         print("Error: Unable to open camera")
@@ -110,15 +114,22 @@ if __name__ == "__main__":
         if reslt is not None:
             boxes, scores, classids, kpts = reslt
             names, recg_score = [],[]
+            colliding = ""
+            direc = ""
             for boxe, score, kpt in zip(boxes, scores, kpts):
                 name,scor = model.search_flatten(model.get_embeds(frame, boxe, score, kpt ))#*[np.array(i,dtype=np.float64) for i in [boxe, score, kpt]]))
                 names.append(name)
                 recg_score.append(scor)
+                # colliding = bounding_box_line_collision(boxe,border_line)
+                # direc = point_position_relative_to_line(border_line,boxe)
                 # Draw bounding boxes on the frame
+            
             frame = model.draw(frame, boxes, scores, kpts, names, recg_score)
+            
             # Display the resulting frame
             # Time when we finish processing for this frame
         new_frame_time = time.time()
+        cv2.line(frame,border_line[0],border_line[1],(255, 0, 0),2)
 
         # Calculating the fps
 
