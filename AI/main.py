@@ -4,6 +4,9 @@ from camera import Camera
 
 cam = Camera(0,"http://127.0.0.1:5000/","entry")
 prev_frame_time = time.time()
+start_time = time.time()
+
+
 while True:
     boxes, names, frame = cam.update_frame()
     new_frame_time = time.time()
@@ -24,7 +27,13 @@ while True:
     # Break the loop if 'q' is pressed
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
+    current_time = time.time()
+    elapsed_time = current_time - start_time
+
+    if elapsed_time > 86400:  # 86400 seconds in a day
+        cam.refresh()
+        start_time = current_time  
 
 # When everything done, release the capture
-cap.release()
+cam.release()
 cv2.destroyAllWindows()

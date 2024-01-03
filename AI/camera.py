@@ -78,3 +78,11 @@ class Camera:
     def save(self):
         with open('data.pkl', 'wb') as file:
             pkl.dump(self.data, file)
+    
+    def release(self):
+        self.camera.release()
+
+    def refresh(self):
+        self.data = {}
+        for i in os.listdir(IMAGES_PATH):
+            self.data[i.split(".")[0]] = []
