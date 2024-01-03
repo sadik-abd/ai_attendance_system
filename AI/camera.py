@@ -66,7 +66,7 @@ class Camera:
             return boxes, names, frame
         
         else:
-            return None
+            return None, None, frame
     
     def update_record(self, username, ttime):
         date_string = ttime.strftime('%Y-%m-%d')

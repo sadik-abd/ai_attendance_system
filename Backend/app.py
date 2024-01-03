@@ -1,5 +1,5 @@
 from flask import Flask
-from flask import render_template,jsonify, request, redirect, url_for, session,send_from_directory
+from flask import render_template,jsonify, request, redirect, url_for, session,send_from_directory,Response, stream_with_context
 from flask import Flask, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
@@ -7,6 +7,7 @@ import os
 from datetime import datetime
 from constant import *
 from records_db import Records
+import requests
 app = Flask(__name__)
 app.secret_key = "kuttarBaccha"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+DB_PATH
@@ -110,7 +111,20 @@ def download_image(filename):
     image_directory = IMAGES_PATH
     return send_from_directory(image_directory, filename, as_attachment=True)
 
+@app.route('/video_feed')
+def video_feed():
+    return render_template("camera.html")
+
+@app.route('/video_feeds')
+def video_feeds():
+    def generate():
+        with requests.get("http://127.0.0.1:3232/video_feed", stream=True) as r:
+            for chunk in r.iter_content(chunk_size=4096):
+                yield chunk
+
+    return Response(stream_with_context(generate()), content_type='multipart/x-mixed-replace; boundary=frame')
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run()
+    app.run(host="0.0.0.0",port=80)
