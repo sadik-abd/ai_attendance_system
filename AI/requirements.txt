@@ -1,4 +1,0 @@
-insightface
-opencv-python
-onnxruntime-gpu
-flask
