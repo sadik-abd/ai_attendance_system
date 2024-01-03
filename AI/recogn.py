@@ -11,6 +11,35 @@ from yolo import YOLOv8_face
 import os
 import time 
 import json
+import requests
+from constants import *
+
+def download_images(base_url, save_directory):
+    # Ensure the save directory exists
+    if not os.path.exists(save_directory):
+        os.makedirs(save_directory)
+
+    # Get the list of images
+    response = requests.get(f"{base_url}/images")
+    if response.status_code == 200:
+        image_files = response.json()
+
+        # Download each image
+        for image_file in image_files:
+            if not image_file in os.listdir(save_directory):
+                image_url = f"{base_url}/images/{image_file}"
+                image_response = requests.get(image_url)
+
+                if image_response.status_code == 200:
+                    # Save the image
+                    with open(os.path.join(save_directory, image_file), 'wb') as f:
+                        f.write(image_response.content)
+                else:
+                    print(f"Failed to download {image_file}")
+
+        print("All images downloaded successfully.")
+    else:
+        print("Failed to retrieve image list.")
 
 def crop_images(image, bounding_boxes):
     """
@@ -35,13 +64,13 @@ def crop_images(image, bounding_boxes):
 
 class Recogniser:
     def __init__(self) -> None:
-        self.detector = YOLOv8_face("./models/yolov8n-face.onnx")
+        self.detector = YOLOv8_face(os.path.join(MODELS_PATH,"yolov8n-face.onnx"))
         self.tracker = None
-        self.rec_model = model_zoo.get_model(f'./models/webface_r50.onnx', providers=["CUDAExecutionProvider"])
+        self.rec_model = model_zoo.get_model(os.path.join(MODELS_PATH,'webface_r50.onnx'), providers=["CUDAExecutionProvider"])
         self.rec_model.prepare(ctx_id=0, input_size=(640, 640), det_thres=0.5)
         self.embeds = {}
-        for i in os.listdir("./asset/"):
-            self.save_embeds("./asset/"+i,i.split(".")[0])
+        for i in os.listdir(IMAGES_PATH):
+            self.save_embeds(os.path.join(IMAGES_PATH,i),i.split(".")[0])
         print("successfully loaded all the models")
 
     def save_embeds(self, path, name):

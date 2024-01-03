@@ -1,5 +1,5 @@
 from flask import Flask
-from flask import render_template,jsonify, request, redirect, url_for, session
+from flask import render_template,jsonify, request, redirect, url_for, session,send_from_directory
 from flask import Flask, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
@@ -86,6 +86,10 @@ def add_record():
     if request.is_json:
         # Get JSON data from the request
         data = request.get_json()
+        records_db.add_record(data)
+        return {"message":"successfuly added record"},200
+    else:
+        return {"error":"please send json requests"},404
 
 
 @app.route("/records")
@@ -94,6 +98,17 @@ def view_records():
     employee = Employee.query.get(employee_id)
     data = records_db[employee.username]
     return render_template("records.html",data=data,len=len,max=max)
+
+@app.route('/images', methods=['GET'])
+def list_images():
+    image_directory = IMAGES_PATH
+    images = os.listdir(image_directory)
+    return jsonify(images)
+
+@app.route('/images/<filename>', methods=['GET'])
+def download_image(filename):
+    image_directory = IMAGES_PATH
+    return send_from_directory(image_directory, filename, as_attachment=True)
 
 if __name__ == "__main__":
     with app.app_context():
