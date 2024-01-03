@@ -1,0 +1,97 @@
+{% include 'navbar.html' %}
+
+
+            <!-- Begin Page Content -->
+            <div class="container-fluid">
+
+                <!-- Page Heading -->
+                <br/><br/>
+                <h1 class="h3 mb-2 text-gray-800">User Records</h1>
+                <!-- DataTales Example -->
+                <div class="card shadow mb-4">
+                  <div class="card-body">
+                    <div class="table-responsive">
+                      <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                          <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Position</th>
+                            <th>Start date</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {% for employee in employees %}
+                          <tr>
+                            <td>{{ employee.id }}</td>
+                            <td>{{ employee.name }}</td>
+                            <td>{{ employee.position }}</td>
+                            <td>{{ employee.start_date }}</td>
+                            <!-- Additional columns -->
+                            <td>
+                              <!-- View Records Button -->
+                              <button type="button" class="btn btn-info" onclick="viewRecords('{{ employee.id }}')">View Records</button>
+                      
+                              <!-- Delete Button -->
+                              <button type="button" class="btn btn-danger" onclick="deleteRecord('{{ employee.id }}')">Delete</button>
+                            </td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+      
+              </div>
+              <!-- /.container-fluid -->
+      
+            </div>
+            
+      <!-- Bootstrap core JavaScript-->
+      <script>
+        function viewRecords(employeeId) {
+          // Redirect to the records page
+          window.location.href = '/records?user=' + employeeId;
+        }
+        
+        function deleteRecord(employeeId) {
+          if (confirm('Are you sure you want to delete this record?')) {
+            fetch('/delete?user=' + employeeId)
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  alert('Successfully deleted');
+                  // Optionally remove the employee row from the table or refresh the page
+                  location.reload(); // Refresh the page
+                } else {
+                  alert('Error: ' + data.error);
+                }
+              })
+              .catch(error => {
+                alert('Request failed: ' + error);
+              });
+          }
+        }
+
+        </script>
+  <script src="static/vendor/jquery/jquery.min.js"></script>
+  <script src="static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Core plugin JavaScript-->
+  <script src="static/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+  <!-- Custom scripts for all pages-->
+  <script src="static/js/sb-admin-2.min.js"></script>
+
+  <!-- Page level plugins -->
+  <script src="static/vendor/datatables/jquery.dataTables.min.js"></script>
+  <script src="static/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+  <!-- Page level custom scripts -->
+  <script src="static/js/demo/datatables-demo.js"></script>
+
+</body>
+</html>
