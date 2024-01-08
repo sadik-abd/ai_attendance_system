@@ -13,6 +13,7 @@ app.secret_key = "kuttarBaccha"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+DB_PATH
 db = SQLAlchemy(app)
 records_db = Records()
+cameras = []
 
 class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -98,7 +99,7 @@ def view_records():
     employee_id = request.args.get('user')
     employee = Employee.query.get(employee_id)
     data = records_db[employee.username]
-    return render_template("records.html",data=data,len=len,max=max)
+    return render_template("records.html",username=employee.name,data=data,len=len,max=max)
 
 @app.route('/images', methods=['GET'])
 def list_images():
@@ -113,12 +114,20 @@ def download_image(filename):
 
 @app.route('/video_feed')
 def video_feed():
-    return render_template("camera.html")
+    return render_template("camera.html",cameras=cameras)
 
-@app.route('/video_feeds')
-def video_feeds():
+
+@app.route("/add_camera/<label>")
+def add_camera(label):
+    link = request.args.get("link")
+    cameras.append({"link":link,"label":label})
+    return {"message":"camera inserted"},200
+
+@app.route('/cam_vid/',methods=['GET'])
+def cam_vid():
+    link = request.args.get("link")[1:-1]
     def generate():
-        with requests.get("http://127.0.0.1:3232/video_feed", stream=True) as r:
+        with requests.get(link, stream=True) as r:
             for chunk in r.iter_content(chunk_size=4096):
                 yield chunk
 

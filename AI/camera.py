@@ -2,13 +2,15 @@ from recogn import *
 import pickle as pkl
 from datetime import datetime as dt
 from constants import *
-
+import requests
 class Camera:
-    def __init__(self, addr, server_addr, label,file=None) -> None:
+    def __init__(self, addr, server_addr, label,file=None, addres="") -> None:
         self.address = addr
         self.camera = cv2.VideoCapture(self.address)
         self.server_address = server_addr
         self.label = label
+        resp = requests.get(self.server_address+f"add_camera/{self.label}?link={addres}")
+        print(resp.content)
         self.model = Recogniser()
         download_images(self.server_address,IMAGES_PATH)
         if file is None:

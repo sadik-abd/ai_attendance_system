@@ -1,5 +1,25 @@
 {% include 'navbar.html' %}
-<img src="/video_feeds">
+            <!-- Begin Page Content -->
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <br/><br/>
+    <h1 class="h3 mb-2 text-gray-800">Entry cameras</h1>
+    {% for camera in cameras %}
+        {% if camera['label'] == "entry" %}
+            <img src="{{ '/cam_vid?link='+camera['link'] }}">
+            <br/><br/>
+        {% endif %}
+    {% endfor %}
+    <h1 class="h3 mb-2 text-gray-800">Exit cameras</h1>
+    {% for camera in cameras %}
+        {% if camera['label'] == "exit" %}
+            <img src="{{ '/cam_vid?link='+camera['link'] }}">
+            <br/><br/>
+        {% endif %}
+    {% endfor %}
+</div>
+
 <script src="static/vendor/jquery/jquery.min.js"></script>
 <script src="static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
