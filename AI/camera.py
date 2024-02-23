@@ -9,6 +9,8 @@ class Camera:
         self.camera = cv2.VideoCapture(self.address)
         self.server_address = server_addr
         self.label = label
+        self.cam_index = 0
+        self.cam_addr = addres
         resp = requests.get(self.server_address+f"add_camera/{self.label}?link={addres}")
         print(resp.content)
         self.model = Recogniser()
@@ -30,7 +32,8 @@ class Camera:
                 "action":{
                     "type":self.label,
                     "time":str(ttime)
-                    }
+                    },
+                "link":self.cam_addr
                 }
         response = requests.post(self.server_address+"add_record", json=data)
         print(response)

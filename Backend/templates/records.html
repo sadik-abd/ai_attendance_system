@@ -17,6 +17,9 @@
                             <th>Date</th>
                             <th>entry times</th>
                             <th>exit times</th>
+                            <th>Total entries</th>
+                            <th>Total exits</th>
+                            <th>Total Hours</th>
                           </tr>
                         </thead>
 
@@ -26,15 +29,22 @@
                             <!-- <td rowspan="{{max(len(records['entry']), len(records['exit']))}}">{{ k }}</td> -->
                             <td>{{k}}</td>
                             <td>{% for entr in records["entry"] %}
-                                    {{entr}}
+                                    <a href={{"/show_record_img/"+k+"T"+entr+"?type=entry"}}>{{entr}}</a>
                                     <hr class="sidebar-divider d-none d-md-block">
                                 {% endfor %}
                             </td>
                             <td>{% for entr in records["exit"] %}
-                                    {{entr}}
+                              <a href={{"/show_record_img/"+k+"T"+entr+"?type=entry"}}>{{entr}}</a>
                                     <hr class="sidebar-divider d-none d-md-block">
                                 {% endfor %}
                             </td>
+                          <td>{{summ_data[k]["entries"]}}
+                          </td>
+                          <td>{{summ_data[k]["exits"]}}
+                          </td>
+                          <td>{{summ_data[k]["hours_in_office"]}}
+                          </td>
+                          
                           </tr>
                           {% endfor %}
                         </tbody>

@@ -3,7 +3,8 @@ import pickle as pkl
 from camera import Camera
 from flask import Flask, Response
 import threading
-cam = Camera(0,"http://127.0.0.1:80/","exit",addres="'http://127.0.0.1:3232/video_feed'")
+video_port = 3332
+cam = Camera(0,"http://127.0.0.1:80/","entry",addres=f"'http://127.0.0.1:{video_port}/video_feed'")
 prev_frame_time = time.time()
 start_time = time.time()
 app = Flask(__name__)
@@ -51,5 +52,5 @@ def video_feed():
 if __name__ == '__main__':
     my_thread = threading.Thread(target=gen_frames)
     my_thread.start()
-    app.run(port=3232)
+    app.run(port=video_port)
     my_thread.join()

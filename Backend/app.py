@@ -1,12 +1,13 @@
 from flask import Flask
-from flask import render_template,jsonify, request, redirect, url_for, session,send_from_directory,Response, stream_with_context
+from flask import render_template,jsonify, request, redirect, url_for,send_file, session,send_from_directory,Response, stream_with_context
 from flask import Flask, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 import os
+from utils import *
 from datetime import datetime
 from constant import *
-from records_db import Records
+from records_db import *
 import requests
 app = Flask(__name__)
 app.secret_key = "kuttarBaccha"
@@ -23,9 +24,37 @@ class Employee(db.Model):
     start_date = db.Column(db.Date)
     username = db.Column(db.String(120), unique=True, nullable=True)
 
+@app.route("/view_date",methods=["POST"])
+def viw_date():
+    dta = request.form["date"]
+    return redirect(url_for("main")+f"?date={dta}")
+
+@app.route('/index.html', methods=["GET"])
+def index_page():
+    return redirect
 @app.route('/', methods=["GET"])
 def main():
-    return render_template("index.html")
+    try:
+        dt = request.args.get("date")
+        print(dt)
+        if dt is None:
+            raise Exception
+    except Exception as e:
+        dt = datetime.now().strftime("%Y-%m-%d")
+    
+    presents = []
+    data = calculate_office_metrics(records_db.records)
+    for k, v in data.items():
+        try:
+            temp = v[dt]["entries"]
+            if temp == None or temp == 0:
+                raise Exception
+            presents.append(k)
+        except Exception as err:
+            pass
+            #presents[k] = False
+
+    return render_template("index.html",data=data,len=len,max=max,date=dt,presents=presents)
 
 @app.route("/tables",methods=["GET"])
 def tables():
@@ -99,7 +128,9 @@ def view_records():
     employee_id = request.args.get('user')
     employee = Employee.query.get(employee_id)
     data = records_db[employee.username]
-    return render_template("records.html",username=employee.name,data=data,len=len,max=max)
+    summ_data = calculate_office_metrics(records_db.records)[employee.username]
+    print(summ_data)
+    return render_template("records.html",username=employee.name,data=data,len=len,max=max,summ_data=summ_data)
 
 @app.route('/images', methods=['GET'])
 def list_images():
@@ -123,6 +154,7 @@ def add_camera(label):
     cameras.append({"link":link,"label":label})
     return {"message":"camera inserted"},200
 
+
 @app.route('/cam_vid/',methods=['GET'])
 def cam_vid():
     link = request.args.get("link")[1:-1]
@@ -132,6 +164,14 @@ def cam_vid():
                 yield chunk
 
     return Response(stream_with_context(generate()), content_type='multipart/x-mixed-replace; boundary=frame')
+
+@app.route("/show_record_img/<time_pth>")
+def show_record_img(time_pth):
+    tpe = request.args.get("type")
+    n_time = time_pth.replace(":","_")
+    print(n_time)
+    img = find_nearest_image(RECORD_IMAGE_PATH,n_time,tpe) 
+    return send_file(img,mimetype='image/jpeg')
 
 if __name__ == "__main__":
     with app.app_context():
