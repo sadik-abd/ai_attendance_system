@@ -36,7 +36,7 @@ class Records:
             self.records[name][dtime][action_type].append(action_time)
         print(record["link"])
         def thred_runner():
-            time.sleep(1)
+            time.sleep(0.3)
             img_save(record["link"][1:-1],action_type)
         thr = threading.Thread(target=thred_runner)
         

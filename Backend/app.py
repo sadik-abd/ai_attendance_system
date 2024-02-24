@@ -31,7 +31,8 @@ def viw_date():
 
 @app.route('/index.html', methods=["GET"])
 def index_page():
-    return redirect
+    return redirect(url_for("main"))
+
 @app.route('/', methods=["GET"])
 def main():
     try:
