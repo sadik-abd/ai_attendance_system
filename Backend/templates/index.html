@@ -78,7 +78,27 @@
         </div>
       </div>
     </div>
-    <h1 class="h3 mb-2 text-gray-800">Records of {{ date }}</h1>
+    <h1 class="h3 mb-2 text-gray-800">Records</h1>
+    <!-- Start Filter-->
+    <div class="container mt-5">
+      <div class="row">
+          <div class="col-md-12">
+              <form class="form-inline justify-content-center" action="/view_date" method="post">
+                <label for="labeel" class="mb-2 text-gray-800">Filter dates</label>
+                <label for="startDate" id="labeel">Start:</label>
+                  <input type="date" class="form-control" id="startDate"  name="start_date"
+                  value="{{ request.form.date | default(date) }}" 
+                  min="2020-01-01" max="2030-12-31">
+                  <label for="endDate">End:</label>
+                  <input type="date" class="form-control" id="endDate" name="end_date"
+                  value="{{ request.form.date | default(date) }}" 
+                  min="2020-01-01" max="2030-12-31">
+                  <input type="submit"class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" value="Submit">
+              </form>
+          </div>
+      </div>
+  </div>
+  <!-- break -->
                 <!-- DataTales Example -->
                 <div class="card shadow mb-4">
                   <div class="card-body">
@@ -100,9 +120,9 @@
                             <td>{{k}}</td>
 
                             {% if k in presents %}
-                                <td>{{records[date]["entries"]}}</td>
-                                <td>{{records[date]["exits"]}}</td>
-                                <td>{{records[date]["hours_in_office"]}}</td>
+                                <td>{{records["entries"]}}</td>
+                                <td>{{records["exits"]}}</td>
+                                <td>{{records["hours_in_office"]}}</td>
                             {% else %}
                                 <td>0</td>
                                 <td>0</td>
@@ -115,13 +135,16 @@
                     </div>
                   </div>
                 </div>
-                <h1 class="h3 mb-2 text-gray-800">Change the Date</h1>
+                <!-- <h1 class="h3 mb-2 text-gray-800">Select the Date</h1>
                 <form action="/view_date" method="post">
-                    <input type="date"class="form-control form-control-user" id="date" name="date"
+                    <input type="date"class="form-control form-control-user" id="date" name="start_date"
+                           value="{{ request.form.date | default(date) }}" 
+                           min="2020-01-01" max="2030-12-31">
+                    <input type="date"class="form-control form-control-user" id="date" name="end_date"
                            value="{{ request.form.date | default(date) }}" 
                            min="2020-01-01" max="2030-12-31">
                     <input type="submit"class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" value="Submit">
-                </form>
+                </form> -->
 </div>
 
 

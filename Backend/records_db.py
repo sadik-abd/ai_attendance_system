@@ -81,6 +81,39 @@ def calculate_office_metrics(data):
             }
     return results
 
+from datetime import datetime
+
+def sum_values_between_dates(datas, start_date, end_date):
+    # Convert string dates to datetime objects
+    start_date = datetime.strptime(start_date, "%Y-%m-%d")
+    end_date = datetime.strptime(end_date, "%Y-%m-%d")
+    
+    # Initialize sums
+
+    ret_data = dict()
+    # Iterate through each date in the dictionary
+    for name, data in datas.items():
+        total_hours = 0
+        entries = 0
+        exits = 0
+        for date_str, values in data.items():
+            current_date = datetime.strptime(date_str, "%Y-%m-%d")
+            
+            # Check if the current date falls within the start and end dates
+            if start_date <= current_date <= end_date:
+                # Sum up the values
+                total_hours += int(values.get('hours_in_office', 0))
+                entries += int(values.get('entries', 0))
+                exits += int(values.get('exits', 0))
+
+        ret_data[name] = {
+            'hours_in_office': total_hours,
+            'entries': entries,
+            'exits': exits
+        }
+    # Return the total sums
+    return ret_data
+
 def img_save(url, label):
     response = requests.get(url, stream=True)
 

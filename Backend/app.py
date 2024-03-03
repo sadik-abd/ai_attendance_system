@@ -26,8 +26,9 @@ class Employee(db.Model):
 
 @app.route("/view_date",methods=["POST"])
 def viw_date():
-    dta = request.form["date"]
-    return redirect(url_for("main")+f"?date={dta}")
+    dta1 = request.form["start_date"]
+    dta2 = request.form["end_date"]
+    return redirect(url_for("main")+f"?start_date={dta1}&end_date={dta2}")
 
 @app.route('/index.html', methods=["GET"])
 def index_page():
@@ -36,18 +37,21 @@ def index_page():
 @app.route('/', methods=["GET"])
 def main():
     try:
-        dt = request.args.get("date")
-        print(dt)
-        if dt is None:
+        dta1 = request.args.get("start_date")
+        dta2 = request.args.get("end_date")
+
+        if dta2 is None or dta1 is None:
             raise Exception
     except Exception as e:
-        dt = datetime.now().strftime("%Y-%m-%d")
+        dta1 = datetime.now().strftime("%Y-%m-%d")
+        dta2 = datetime.now().strftime("%Y-%m-%d")
     
     presents = []
     data = calculate_office_metrics(records_db.records)
+    data = sum_values_between_dates(data,dta1,dta2)
     for k, v in data.items():
         try:
-            temp = v[dt]["entries"]
+            temp = v["entries"]
             if temp == None or temp == 0:
                 raise Exception
             presents.append(k)
@@ -55,7 +59,7 @@ def main():
             pass
             #presents[k] = False
 
-    return render_template("index.html",data=data,len=len,max=max,date=dt,presents=presents)
+    return render_template("index.html",data=data,len=len,max=max,presents=presents)
 
 @app.route("/tables",methods=["GET"])
 def tables():
