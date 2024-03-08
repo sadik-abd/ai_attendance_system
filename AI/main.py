@@ -3,8 +3,9 @@ import pickle as pkl
 from camera import Camera
 from flask import Flask, Response
 import threading
-video_port = 3332
-cam = Camera(0,"http://127.0.0.1:80/","entry",addres=f"'http://127.0.0.1:{video_port}/video_feed'")
+
+video_port = 3333
+cam = Camera(0,"http://127.0.0.1:80/","exit",addres=f"'http://127.0.0.1:{video_port}/video_feed'")
 prev_frame_time = time.time()
 start_time = time.time()
 app = Flask(__name__)
@@ -47,6 +48,7 @@ def video_feed():
         while True:
             yield resp
     return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 
 if __name__ == '__main__':

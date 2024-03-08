@@ -3,6 +3,7 @@ import pickle as pkl
 from datetime import datetime as dt
 from constants import *
 import requests
+AI_model = Recogniser()
 class Camera:
     def __init__(self, addr, server_addr, label,file=None, addres="") -> None:
         self.address = addr
@@ -13,7 +14,7 @@ class Camera:
         self.cam_addr = addres
         resp = requests.get(self.server_address+f"add_camera/{self.label}?link={addres}")
         print(resp.content)
-        self.model = Recogniser()
+        self.model = AI_model
         download_images(self.server_address,IMAGES_PATH)
         if file is None:
             self.data = {}
@@ -50,8 +51,6 @@ class Camera:
         if reslt is not None:
             boxes, scores, classids, kpts = reslt
             names, recg_score = [],[]
-            colliding = ""
-            direc = ""
             for boxe, score, kpt in zip(boxes, scores, kpts):
                 name,scor = self.model.search_flatten(self.model.get_embeds(frame, boxe, score, kpt ))#*[np.array(i,dtype=np.float64) for i in [boxe, score, kpt]]))
                 names.append(name)
