@@ -3,19 +3,35 @@ import pickle as pkl
 from camera import Camera
 from flask import Flask, Response
 import threading
+import sys
+import signal
+import argparse
 
-video_port = 3333
-cam = Camera(0,"http://127.0.0.1:80/","exit",addres=f"'http://127.0.0.1:{video_port}/video_feed'")
+# Create the parser
+parser = argparse.ArgumentParser(description="Process some integers.")
+
+parser.add_argument("--cctv_link",dest="cctv_link")
+parser.add_argument('--video_port', dest='video_port', default=3333)
+parser.add_argument("--label",dest="label")
+parser.add_argument("--server_link",dest="server_link")
+# Parse the arguments
+args = parser.parse_args()
+
+
+
+cam = Camera(args.cctv_link,args.server_link,args.label,addres=f"'http://127.0.0.1:{args.video_port}/video_feed'")
 prev_frame_time = time.time()
 start_time = time.time()
 app = Flask(__name__)
 resp = None
+stopp = False
 
 def gen_frames():
     global start_time
     global prev_frame_time
     global resp
-    while True:
+    global stopp
+    while not stopp:
         boxes, names, frame = cam.update_frame()
         new_frame_time = time.time()
 
@@ -49,10 +65,19 @@ def video_feed():
             yield resp
     return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-
-
-if __name__ == '__main__':
-    my_thread = threading.Thread(target=gen_frames)
-    my_thread.start()
-    app.run(port=video_port)
+@app.route("/stop")
+def stop():
+    global stopp
+    stopp = True
     my_thread.join()
+    os.kill(os.getpid(), signal.SIGINT)
+    return {
+        "message" : "stopped"
+    }
+    
+
+    
+
+my_thread = threading.Thread(target=gen_frames)
+my_thread.start()
+app.run(port=args.video_port)

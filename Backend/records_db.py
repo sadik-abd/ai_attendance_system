@@ -1,10 +1,11 @@
 import json
 import random
 from constant import *
-from datetime import datetime
+from datetime import datetime,timedelta
 import requests
 import time
 import threading
+
 class Records:
     def __init__(self) -> None:
         self.file_path = RECORD_DB
@@ -81,7 +82,37 @@ def calculate_office_metrics(data):
             }
     return results
 
-from datetime import datetime
+def days_since_last_entry(user_records):
+    most_recent_date = None
+    for date_str in user_records.keys():
+        record_date = datetime.strptime(date_str, '%Y-%m-%d')
+        if most_recent_date is None or record_date > most_recent_date:
+            most_recent_date = record_date
+    if most_recent_date is not None:
+        return (datetime.now() - most_recent_date).days
+    return None  # No entry found
+
+# Function to format the absence duration
+def format_absence_duration(days):
+    if days is None:
+        return "never attended"
+    elif days >= 14:
+        weeks = days // 7
+        return f"{weeks} week{'s' if weeks > 1 else ''}"
+    else:
+        return f"{days} day{'s' if days > 1 else ''}"
+
+# Main function to find users' absences
+def find_user_absences(data):
+    user_absences = []
+    for user, records in data.items():
+        days_absent = days_since_last_entry(records)
+        if days_absent is not None and days_absent > 0:  # Check if the user has been absent
+            absence_duration = format_absence_duration(days_absent)
+            user_absences.append(f"{user} is absent for {absence_duration}")
+        elif days_absent is None:  # User never attended
+            user_absences.append(f"{user} has {format_absence_duration(days_absent)}")
+    return user_absences
 
 def sum_values_between_dates(datas, start_date, end_date):
     # Convert string dates to datetime objects

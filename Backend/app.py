@@ -49,6 +49,7 @@ def main():
     presents = []
     data = calculate_office_metrics(records_db.records)
     data = sum_values_between_dates(data,dta1,dta2)
+    alerts = find_user_absences(records_db.records)
     for k, v in data.items():
         try:
             temp = v["entries"]
@@ -59,7 +60,7 @@ def main():
             pass
             #presents[k] = False
 
-    return render_template("index.html",data=data,len=len,max=max,presents=presents)
+    return render_template("index.html",data=data,len=len,max=max,presents=presents,alerts=alerts)
 
 @app.route("/tables",methods=["GET"])
 def tables():
