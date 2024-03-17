@@ -3,15 +3,18 @@ from flask import render_template,jsonify, request, redirect, url_for,send_file,
 from flask import Flask, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
+from functools import wraps
 import os
 from utils import *
 from datetime import datetime
 from constant import *
 from records_db import *
 import requests
+import pickle as pkl
 app = Flask(__name__)
 app.secret_key = "kuttarBaccha"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+DB_PATH
+users = json.load(open(GL_DB+"/admin.json","r",encoding="utf-8"))
 db = SQLAlchemy(app)
 records_db = Records()
 cameras = []
@@ -24,6 +27,52 @@ class Employee(db.Model):
     start_date = db.Column(db.Date)
     username = db.Column(db.String(120), unique=True, nullable=True)
 
+class EmployeeInfo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(120), unique=True, nullable=True)
+    employee_id = db.Column(db.String(120), unique=True, nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    gender = db.Column(db.String(10), nullable=False)
+    age = db.Column(db.Integer, nullable=False)
+    designation = db.Column(db.String(120), nullable=False)
+    department = db.Column(db.String(120), nullable=False)
+    mobile_number = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    street_address = db.Column(db.String(120), nullable=False)
+    city = db.Column(db.String(50), nullable=False)
+    state = db.Column(db.String(50), nullable=False)
+    zip_code = db.Column(db.String(10), nullable=False)
+    hire_date = db.Column(db.String(120), nullable=False)
+    status = db.Column(db.String(50), nullable=False)
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'logged_in' not in session:
+            flash('Please login to view this page.', 'danger')
+            return redirect(url_for('login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# The login page
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    
+    if request.method == 'POST':
+        
+        username = request.form['username']
+        password = request.form['password']
+        if username in users:
+            if users[username] == password:
+                session['logged_in'] = True
+                flash('You were successfully logged in.', 'success')
+                return redirect(url_for('main'))
+        # Here you should validate the username and password (e.g., checking against database records)
+        # For demonstration, we just check if the username is 'admin' and password is 'secret'
+        else:
+            flash('Invalid username/password.', 'danger')
+    return render_template('login.html')
+
 @app.route("/view_date",methods=["POST"])
 def viw_date():
     dta1 = request.form["start_date"]
@@ -35,6 +84,7 @@ def index_page():
     return redirect(url_for("main"))
 
 @app.route('/', methods=["GET"])
+@login_required
 def main():
     try:
         dta1 = request.args.get("start_date")
@@ -62,11 +112,28 @@ def main():
 
     return render_template("index.html",data=data,len=len,max=max,presents=presents,alerts=alerts)
 
+@app.route('/add_user', methods=["GET","POST"])
+@login_required
+def add_npc():
+    if request.method == "POST":
+        name = request.form["name"]
+        password = request.form["password"]
+        users[name] = password
+        json.dump(users,open(GL_DB+"/admin.json","w",encoding="utf-8"),indent=4)
+    return render_template("add_users.html")
+
 @app.route("/tables",methods=["GET"])
+@login_required
 def tables():
     employees = Employee.query.all()
-    print(employees)
     return render_template("tables.html",employees=employees)
+
+@app.route("/get_info",methods=["GET"])
+@login_required
+def get_inf():
+    username = request.args.get("user")
+    employ = EmployeeInfo.query.filter_by(username=username).first()
+    return render_template("get_info.html",employee=employ)
 
 def generate_username(name, id):
     formatted_name = name.replace(' ', '_').lower()
@@ -74,8 +141,8 @@ def generate_username(name, id):
 
 @app.route('/add_employee', methods=['POST'])
 def add_employee():
-    name = request.form['name']
-    position = request.form.get('position', '')
+    name = request.form['Name']
+    position = request.form.get("Department")
     image = request.files['image']
     image_path = None
 
@@ -98,11 +165,32 @@ def add_employee():
         new_employee.image_path = image_path
     records_db.add_user(new_employee.username,str(new_employee.start_date))
     db.session.commit()
+    nemployee = EmployeeInfo(
+            username = new_employee.username,
+            employee_id=request.form['EmployeeID'],
+            name=request.form['Name'],
+            gender=request.form['Gender'],
+            age=int(request.form['Age']),
+            designation=request.form['Designation'],
+            department=request.form['Department'],
+            mobile_number=request.form['MobileNumber'],
+            email=request.form['Email'],
+            street_address=request.form['StreetAddress'],
+            city=request.form['City'],
+            state=request.form['State'],
+            zip_code=request.form['ZipCode'],
+            hire_date=request.form['HireDate'],
+            status=request.form['Status']
+        )
+    db.session.add(nemployee)
+    # Add new employee to the database
+    db.session.commit()
 
     flash('Employee added successfully!', 'success')
     return redirect(url_for('register'))
 
 @app.route('/register')
+@login_required
 def register():
     return render_template('add_user.html')
 
@@ -111,9 +199,15 @@ def delete_employee():
     employee_id = request.args.get('user')
     employee = Employee.query.get(employee_id)
     if employee:
+        del records_db.records[employee.username]
+        records_db.save()
+        infeml = EmployeeInfo.query.filter_by(username=employee.username).first()
+        if infeml:
+            db.session.delete(infeml)
         os.remove(employee.image_path)
         db.session.delete(employee)
         db.session.commit()
+        
         return jsonify(success=True)
     else:
         return jsonify(success=False, error="Employee not found"), 404
@@ -130,6 +224,7 @@ def add_record():
 
 
 @app.route("/records")
+@login_required
 def view_records():
     employee_id = request.args.get('user')
     employee = Employee.query.get(employee_id)
@@ -150,6 +245,7 @@ def download_image(filename):
     return send_from_directory(image_directory, filename, as_attachment=True)
 
 @app.route('/video_feed')
+@login_required
 def video_feed():
     return render_template("camera.html",cameras=cameras)
 
@@ -160,6 +256,12 @@ def add_camera(label):
     cameras.append({"link":link,"label":label})
     return {"message":"camera inserted"},200
 
+@app.route("/delete_camera/<label>")
+def delete_camera(label):
+    link = request.args.get("link")
+    ind = cameras.index({"link":link,"label":label})
+    del cameras[ind]
+    return {"message":"camera inserted"},200
 
 @app.route('/cam_vid/',methods=['GET'])
 def cam_vid():

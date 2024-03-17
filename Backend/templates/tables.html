@@ -6,7 +6,7 @@
 
                 <!-- Page Heading -->
                 <br/><br/>
-                <h1 class="h3 mb-2 text-gray-800">User Records</h1>
+                <h1 class="h3 mb-2 text-gray-800">Employee Records</h1>
                 <!-- DataTales Example -->
                 <div class="card shadow mb-4">
                   <div class="card-body">
@@ -36,6 +36,8 @@
                       
                               <!-- Delete Button -->
                               <button type="button" class="btn btn-danger" onclick="deleteRecord('{{ employee.id }}')">Delete</button>
+
+                              <button type="button" class="btn btn-primary dark" onclick="viewInfo('{{ employee.username }}')">Info</button>
                             </td>
                           </tr>
                           {% endfor %}
@@ -49,7 +51,7 @@
               <!-- /.container-fluid -->
       
             </div>
-            
+
       <!-- Bootstrap core JavaScript-->
       <script>
         function viewRecords(employeeId) {
@@ -74,6 +76,9 @@
                 alert('Request failed: ' + error);
               });
           }
+        }
+        function viewInfo(usrname){
+          window.location.href = '/get_info?user=' + usrname;
         }
 
         </script>

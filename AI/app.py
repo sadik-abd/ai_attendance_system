@@ -96,7 +96,7 @@ class SetupPage(ttk.Frame):
         self.rtsp_entry.grid(row=0, column=1, padx=10, pady=10)
 
         ttk.Label(self, text="Camera Label (entry/exit):").grid(row=1, column=0, padx=10, pady=10)
-        self.label_entry = ttk.Entry(self)
+        self.label_entry = ttk.Combobox(self, values=["entry","exit"])
         self.label_entry.grid(row=1, column=1, padx=10, pady=10)
 
         ttk.Label(self, text="Video Port:").grid(row=2, column=0, padx=10, pady=10)
@@ -113,6 +113,8 @@ class SetupPage(ttk.Frame):
 
         ttk.Button(self, text="Start Camera", command=self.start_camera).grid(row=5, column=0, columnspan=2, pady=10)
         ttk.Button(self, text="Check Running Cameras", command=lambda: controller.show_frame(CamerasPage)).grid(row=6, column=0, columnspan=2, pady=10)
+
+
     def start_camera(self):
         """Starts the camera using the information provided in the entry fields."""
         cctv_link = self.rtsp_entry.get()

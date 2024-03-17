@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Details</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .employee-details {
+            margin-top: 20px;
+        }
+        .detail-heading {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .detail-body {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container employee-details">
+        <div class="detail-heading">
+            <h2>{{ employee.name }}'s Details</h2>
+        </div>
+        <div class="detail-body">
+            <h5><strong>ID:</strong> {{ employee.employee_id }}</h5>
+            <h5><strong>Gender:</strong> {{ employee.gender }}</h5>
+            <h5><strong>Age:</strong> {{ employee.age }}</h5>
+            <h5><strong>Designation:</strong> {{ employee.designation }}</h5>
+            <h5><strong>Department:</strong> {{ employee.department }}</h5>
+            <h5><strong>Email:</strong> {{ employee.email }}</h5>
+            <h5><strong>Address:</strong> {{ employee.street_address }}, {{ employee.city }}, {{ employee.state }}, {{ employee.zip_code }}</h5>
+            <h5><strong>Hire Date:</strong> {{ employee.hire_date }}</h5>
+            <h5><strong>Status:</strong> {{ employee.status }}</h5>
+            <!-- Add more employee details as needed -->
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+</body>
+</html>
