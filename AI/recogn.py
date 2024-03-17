@@ -82,7 +82,7 @@ class Recogniser:
             n_kpts.append([int(kp[i * 3]), int(kp[i * 3 + 1])])
         face = Face(bbox=boxes[0], kps=np.array(n_kpts), det_score=scores[0])
         self.embeds[name] = self.rec_model.get(img, face)
-        with open('./embeds/embeds.pkl', 'wb') as file:
+        with open(EMBEDS_PATH+'/embeds/embeds.pkl', 'wb') as file:
             pickle.dump(self.embeds, file)
 
     def search_flatten(self, emb, threshold=8.0):
