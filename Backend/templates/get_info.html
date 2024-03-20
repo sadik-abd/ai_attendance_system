@@ -21,24 +21,42 @@
             padding: 20px;
             border-radius: 5px;
         }
+        .employee-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px; /* Optional: if you want rounded corners */
+        }
+        .back-button {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container employee-details">
+        <div class="back-button">
+            <button type="button" class="btn btn-primary" onclick="window.location.href='/'">Back</button>
+        </div>
         <div class="detail-heading">
             <h2>{{ employee.name }}'s Details</h2>
         </div>
-        <div class="detail-body">
-            <h5><strong>ID:</strong> {{ employee.employee_id }}</h5>
-            <h5><strong>Gender:</strong> {{ employee.gender }}</h5>
-            <h5><strong>Age:</strong> {{ employee.age }}</h5>
-            <h5><strong>Designation:</strong> {{ employee.designation }}</h5>
-            <h5><strong>Department:</strong> {{ employee.department }}</h5>
-            <h5><strong>Email:</strong> {{ employee.email }}</h5>
-            <h5><strong>Address:</strong> {{ employee.street_address }}, {{ employee.city }}, {{ employee.state }}, {{ employee.zip_code }}</h5>
-            <h5><strong>Hire Date:</strong> {{ employee.hire_date }}</h5>
-            <h5><strong>Status:</strong> {{ employee.status }}</h5>
-            <!-- Add more employee details as needed -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="detail-body">
+                    <h5><strong>ID:</strong> {{ employee.employee_id }}</h5>
+                    <h5><strong>Gender:</strong> {{ employee.gender }}</h5>
+                    <h5><strong>Age:</strong> {{ employee.age }}</h5>
+                    <h5><strong>Designation:</strong> {{ employee.designation }}</h5>
+                    <h5><strong>Department:</strong> {{ employee.department }}</h5>
+                    <h5><strong>Email:</strong> {{ employee.email }}</h5>
+                    <h5><strong>Address:</strong> {{ employee.street_address }}, {{ employee.city }}, {{ employee.state }}, {{ employee.zip_code }}</h5>
+                    <h5><strong>Hire Date:</strong> {{ employee.hire_date }}</h5>
+                    <h5><strong>Status:</strong> {{ employee.status }}</h5>
+                    <!-- Add more employee details as needed -->
+                </div>
+            </div>
+            <div class="col-md-4">
+                <img src="{{ eimage_path }}" alt="{{ employee.name }}'s Photo" class="employee-image">
+            </div>
         </div>
     </div>
 

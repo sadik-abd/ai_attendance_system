@@ -18,6 +18,7 @@ users = json.load(open(GL_DB+"/admin.json","r",encoding="utf-8"))
 db = SQLAlchemy(app)
 records_db = Records()
 cameras = []
+user_role = json.load(open(GL_DB+"/role.json","r",encoding="utf-8"))
 
 class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -119,8 +120,10 @@ def add_npc():
         name = request.form["name"]
         password = request.form["password"]
         users[name] = password
+        user_role[name] = request.form["role"]
         json.dump(users,open(GL_DB+"/admin.json","w",encoding="utf-8"),indent=4)
-    return render_template("add_users.html")
+        json.dump(user_role,open(GL_DB+"/role.json","w",encoding="utf-8"),indent=4)
+    return render_template("add_users.html",users=enumerate(users),roles=user_role)
 
 @app.route("/tables",methods=["GET"])
 @login_required
@@ -133,7 +136,7 @@ def tables():
 def get_inf():
     username = request.args.get("user")
     employ = EmployeeInfo.query.filter_by(username=username).first()
-    return render_template("get_info.html",employee=employ)
+    return render_template("get_info.html",employee=employ,eimage_path=url_for("download_image",filename=employ.username+".jpg"))
 
 def generate_username(name, id):
     formatted_name = name.replace(' ', '_').lower()

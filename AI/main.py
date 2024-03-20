@@ -1,7 +1,7 @@
 from recogn import *
 import pickle as pkl
 from camera import Camera
-from flask import Flask, Response
+from flask import Flask, Response, stream_with_context
 import threading
 import sys
 import signal
@@ -56,23 +56,26 @@ def gen_frames():
         resp = (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
-
+def stop_running_bitch():
+    time.sleep(3)
+    os.kill(os.getpid(), signal.SIGINT)
 @app.route('/video_feed')
 def video_feed():
     def gen():
         global resp
         while True:
             yield resp
-    return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(stream_with_context(gen()), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route("/stop")
 def stop():
     global stopp
     stopp = True
     my_thread.join()
-    os.kill(os.getpid(), signal.SIGINT)
+    mth = threading.Thread(target=stop_running_bitch)
+    mth.start()
     return {
-        "message" : "stopped"
+        "message" : "Stopping in 5 seconds"
     }
     
 

@@ -21,6 +21,7 @@
       <div class="card-body p-0">
         <!-- Nested Row within Card Body -->
         <div class="row">
+          <div class="col-lg-5 d-none d-lg-block bg-login2-image"></div>
           <div class="col-lg-7 ">
             <div class="p-5">
               <div class="text-center">
@@ -48,12 +49,52 @@
                 </button>
               </form>
               <hr>
+              
             </div>
           </div>
         </div>
       </div>
     </div>
+  <!-- Page Heading -->
+  <br/><br/>
+  <h1 class="h3 mb-2 text-gray-800">Existing Users</h1>
+  <!-- DataTales Example -->
+  <div class="card shadow mb-4">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Role</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
 
+          <tbody>
+            {% for id,user in users %}
+            <tr>
+              <td>{{ id }}</td>
+              
+              <td>{{ user }}</td>
+              <td>{{ roles[user] }}</td>
+              <!-- Additional columns -->
+              <td>
+                <!-- View Records Button -->
+
+        
+                <!-- Delete Button -->
+                <button type="button" class="btn btn-danger" onclick="deleteRecord('{{ id }}')">Delete</button>
+
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
   </div>
 </body>
 </html>
