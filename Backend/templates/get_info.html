@@ -17,17 +17,28 @@
             margin-bottom: 20px;
         }
         .detail-body {
-            background-color: #f8f9fa;
+            background-color: #babcbf;
             padding: 20px;
             border-radius: 5px;
         }
         .employee-image {
             max-width: 100%;
-            height: auto;
             border-radius: 5px; /* Optional: if you want rounded corners */
         }
         .back-button {
             margin-bottom: 20px;
+        }
+        .roww {
+            display: flex; /* Make the row a flex container */
+            flex-wrap: wrap; /* Allow items to wrap if needed */
+        }
+        .col-md-8, .col-md-4 {
+            display: flex; /* Make the columns flex containers */
+            flex-direction: column; /* Stack child elements vertically */
+        }
+
+        .detail-body, .employee-image {
+            flex-grow: 1; /* Make detail body and image expand to fill available space */
         }
     </style>
 </head>
@@ -39,17 +50,18 @@
         <div class="detail-heading">
             <h2>{{ employee.name }}'s Details</h2>
         </div>
-        <div class="row">
+        <div class="row roww">
             <div class="col-md-8">
                 <div class="detail-body">
                     <h5><strong>ID:</strong> {{ employee.employee_id }}</h5>
-                    <h5><strong>Gender:</strong> {{ employee.gender }}</h5>
-                    <h5><strong>Age:</strong> {{ employee.age }}</h5>
-                    <h5><strong>Designation:</strong> {{ employee.designation }}</h5>
-                    <h5><strong>Department:</strong> {{ employee.department }}</h5>
-                    <h5><strong>Email:</strong> {{ employee.email }}</h5>
-                    <h5><strong>Address:</strong> {{ employee.street_address }}, {{ employee.city }}, {{ employee.state }}, {{ employee.zip_code }}</h5>
-                    <h5><strong>Hire Date:</strong> {{ employee.hire_date }}</h5>
+                    <br/>
+                    <h5><strong>Gender:</strong> {{ employee.gender }}</h5><br/>
+                    <h5><strong>Age:</strong> {{ employee.age }}</h5><br/>
+                    <h5><strong>Designation:</strong> {{ employee.designation }}</h5><br/>
+                    <h5><strong>Department:</strong> {{ employee.department }}</h5><br/>
+                    <h5><strong>Email:</strong> {{ employee.email }}</h5><br/>
+                    <h5><strong>Address:</strong> {{ employee.street_address }}, {{ employee.city }}, {{ employee.state }}, {{ employee.zip_code }}</h5><br/>
+                    <h5><strong>Hire Date:</strong> {{ employee.hire_date }}</h5><br/>
                     <h5><strong>Status:</strong> {{ employee.status }}</h5>
                     <!-- Add more employee details as needed -->
                 </div>
