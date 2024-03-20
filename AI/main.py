@@ -83,4 +83,6 @@ def stop():
 
 my_thread = threading.Thread(target=gen_frames)
 my_thread.start()
+print("Starting in 4 seconds")
+time.sleep(4)
 app.run(port=args.video_port)
