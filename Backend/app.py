@@ -270,7 +270,7 @@ def delete_camera(label):
 def cam_vid():
     link = request.args.get("link")[1:-1]
     def generate():
-        with requests.get(link, stream=True) as r:
+        with requests.get("http://127.0.0.1:6677/video?link="+link, stream=True) as r:
             for chunk in r.iter_content(chunk_size=4096):
                 yield chunk
 

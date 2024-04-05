@@ -5,6 +5,9 @@ from datetime import datetime,timedelta
 import requests
 import time
 import threading
+from PIL import Image, ImageDraw
+import base64
+import io
 
 class Records:
     def __init__(self) -> None:
@@ -35,10 +38,12 @@ class Records:
                 "exit":[]
             }
             self.records[name][dtime][action_type].append(action_time)
-        print(record["link"])
         def thred_runner():
             time.sleep(0.3)
-            img_save(record["link"][1:-1],action_type)
+            if not record["image"]:
+                img_save(record["link"],action_type,record["bbox"])
+            else:
+                img_save_b64(record["image"],action_type,record["bbox"])
         thr = threading.Thread(target=thred_runner)
         
         self.save()
@@ -145,33 +150,40 @@ def sum_values_between_dates(datas, start_date, end_date):
     # Return the total sums
     return ret_data
 
-def img_save(url, label):
-    response = requests.get(url, stream=True)
+def img_save(url, label, bbox):
+    response = requests.get("http://127.0.0.1:6677/video?link="+url, stream=True)
 
     # Check if the request was successful
     if response.status_code == 200:
-        jpg_content = bytearray()
-        in_jpeg = False
-        for chunk in response.iter_content(chunk_size=1024):
-            # Iterate through each byte
-            for byte in chunk:
-                if byte == 0xff:  # Possible start of JPEG marker
-                    jpg_content.append(byte)  # Add it to array
-                    in_jpeg = True
-                elif in_jpeg:
-                    jpg_content.append(byte)
-                    
-                    if jpg_content[-2:] == bytes([0xff, 0xd9]):  # JPEG end marker
-                        # Save the image
-                        img_path = label+"_"+datetime.now().strftime("%Y-%m-%dT%H_%M_%S")
-                        with open(f"""{RECORD_IMAGE_PATH}/{img_path}.jpg""", 'wb') as f:
-                            f.write(jpg_content)
-                        in_jpeg = False  # Reset for the next image
-                        break  # Exit after saving the first image
-            if not in_jpeg:  # Break the outer loop if we've finished processing a JPEG
-                break
+        # Convert stream to PIL Image
+        image = Image.open(response.raw)
+
+        # Draw bounding box
+        draw = ImageDraw.Draw(image)
+        draw.rectangle(bbox, outline="green", width=2)
+
+        # Save the image
+        img_path = f"{label}_{datetime.now().strftime('%Y-%m-%dT%H_%M_%S')}.jpg"
+        image.save(f"{RECORD_IMAGE_PATH}/{img_path}")
+
     else:
         print("Failed to retrieve the image")
+
+
+def img_save_b64(image_b64, label, bbox):
+    # Decode the base64 image
+    image_bytes = base64.b64decode(image_b64)
+    
+    # Convert bytes to a PIL Image
+    image = Image.open(io.BytesIO(image_bytes))
+
+    # Draw bounding box
+    draw = ImageDraw.Draw(image)
+    draw.rectangle(bbox, outline="green", width=2)
+
+    # Save the image
+    img_path = f"{label}_{datetime.now().strftime('%Y-%m-%dT%H_%M_%S')}.jpg"
+    image.save(f"{RECORD_IMAGE_PATH}/{img_path}")
 
 
 if __name__ == "__main__":
