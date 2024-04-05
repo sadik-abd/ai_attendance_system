@@ -7,13 +7,11 @@ import queue
 
 def execute_main_async(cctv_link, video_port, label, server_link):
     # Define the command and arguments
-    command = 'python'
     script = 'main.py'
 
     # Assemble the full command with arguments
     full_command = [
-        command,
-        script,
+        "main.exe",
         '--cctv_link', cctv_link,
         '--video_port', str(video_port),
         '--label', label,

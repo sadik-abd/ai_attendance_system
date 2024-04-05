@@ -1,88 +1,63 @@
-from recogn import *
-import pickle as pkl
-from camera import Camera
-from flask import Flask, Response, stream_with_context
-import threading
-import sys
+
+import cv2
+import os
 import signal
-import argparse
+import time
+from multiprocessing import Process, Queue, Event
+from camera import Camera
+import requests
+def gen_frames(queue, stop_event, cctv_link, server_link, label):
+    cam = Camera(cctv_link, server_link, label)
+    response = requests.get(server_link+"/add_camera/"+label+"?link='"+cctv_link+"'")
+    print(response.text)
+    prev_frame_time = time.time()
+    start_time = time.time()
 
-# Create the parser
-parser = argparse.ArgumentParser(description="Process some integers.")
-
-parser.add_argument("--cctv_link",dest="cctv_link")
-parser.add_argument('--video_port', dest='video_port', default=3333)
-parser.add_argument("--label",dest="label")
-parser.add_argument("--server_link",dest="server_link")
-# Parse the arguments
-args = parser.parse_args()
-
-
-
-cam = Camera(args.cctv_link,args.server_link,args.label,addres=f"'http://127.0.0.1:{args.video_port}/video_feed'")
-prev_frame_time = time.time()
-start_time = time.time()
-app = Flask(__name__)
-resp = None
-stopp = False
-
-def gen_frames():
-    global start_time
-    global prev_frame_time
-    global resp
-    global stopp
-    while not stopp:
+    while not stop_event.is_set():
         boxes, names, frame = cam.update_frame()
         new_frame_time = time.time()
-
-        # Calculating the fps
-
-        # Convert the time to seconds
         time_elapsed = new_frame_time - prev_frame_time
-        fps = 1/time_elapsed if time_elapsed > 0 else 0
-
-        # Updating the previous frame time to current time
+        fps = 1 / time_elapsed if time_elapsed > 0 else 0
         prev_frame_time = new_frame_time
 
         current_time = time.time()
         elapsed_time = current_time - start_time
-        if elapsed_time > 86400:  # 86400 seconds in a day
+        if elapsed_time > 86400:  # Refresh every 24 hours
             cam.refresh()
-            start_time = current_time  
-        # Display the FPS on the frame
+            start_time = current_time
+
         cv2.putText(frame, f'FPS: {int(fps)}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (100, 255, 0), 3, cv2.LINE_AA)
-        ret, buffer = cv2.imencode('.jpg', frame)
-        
-        resp = (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+        queue.put(frame)
+        time.sleep(0.01)  # Prevents overloading the queue with frames
 
-def stop_running_bitch():
-    time.sleep(3)
-    os.kill(os.getpid(), signal.SIGINT)
-@app.route('/video_feed')
-def video_feed():
-    def gen():
-        global resp
-        while True:
-            yield resp
-    return Response(stream_with_context(gen()), mimetype='multipart/x-mixed-replace; boundary=frame')
+def render_frames(queue, stop_event, cctv_link):
+    cv2.namedWindow(cctv_link)
+    while not stop_event.is_set():
+        if not queue.empty():
+            frame = queue.get()
+            cv2.imshow(cctv_link, frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                stop_event.set()
+                break
+    cv2.destroyAllWindows()
 
-@app.route("/stop")
-def stop():
-    global stopp
-    stopp = True
-    my_thread.join()
-    mth = threading.Thread(target=stop_running_bitch)
-    mth.start()
-    return {
-        "message" : "Stopping in 5 seconds"
-    }
-    
+if __name__ == "__main__":
+    frame_queue = Queue(maxsize=10)
+    stop_event = Event()
 
-    
+    # Set your parameters here
+    cctv_link = input("Enter cctv link: ")
+    label = input("Enter the label: ")
+    server_link = input("Enter the server link: ")
 
-my_thread = threading.Thread(target=gen_frames)
-my_thread.start()
-print("Starting in 4 seconds")
-time.sleep(4)
-app.run(port=args.video_port)
+    # Create and start the video capture process
+    capture_process = Process(target=gen_frames, args=(frame_queue, stop_event, cctv_link, server_link, label))
+    capture_process.start()
+
+    try:
+        # Main process handles video display
+        render_frames(frame_queue, stop_event, cctv_link)
+    finally:
+        # Ensure the subprocess is stopped
+        stop_event.set()
+        capture_process.join()
